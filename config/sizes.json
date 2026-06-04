@@ -1,0 +1,8 @@
+[
+  { "w": 300, "h": 250, "archetype": "box",         "label": "Medium Rectangle" },
+  { "w": 970, "h": 250, "archetype": "billboard",   "label": "Billboard" },
+  { "w": 728, "h": 90,  "archetype": "leaderboard", "label": "Leaderboard" },
+  { "w": 160, "h": 600, "archetype": "skyscraper",  "label": "Wide Skyscraper" },
+  { "w": 300, "h": 600, "archetype": "halfpage",    "label": "Half Page" },
+  { "w": 320, "h": 50,  "archetype": "mobile",      "label": "Mobile Leaderboard" }
+]

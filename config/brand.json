@@ -1,0 +1,21 @@
+{
+  "name": "AWS",
+  "colors": {
+    "ink": "#232F3E",
+    "inkLight": "#37475A",
+    "orange": "#FF9900",
+    "white": "#FFFFFF",
+    "hairline": "#3B4858"
+  },
+  "fontStack": "\"Amazon Ember\", \"Helvetica Neue\", \"Segoe UI\", system-ui, -apple-system, Arial, sans-serif",
+  "rules": [
+    "squid ink (#232F3E) dominant background",
+    "amazon orange (#FF9900) reserved for CTA + single accent only",
+    "white text, no consumer warmth",
+    "NO gradients",
+    "geometric technical sans-serif",
+    "headline-driven, proof-led, short + declarative",
+    "lead with what the customer built, not what AWS does"
+  ],
+  "notes": "Swap fontStack to bundled 'Amazon Ember' woff2 when licensed. Logo here is a text placeholder \u2014 drop the locked aws asset into /assets and reference it in render.js."
+}
