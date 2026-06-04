@@ -4,6 +4,17 @@ Brief in → DV360-spec HTML5 animated banners out. One concept versions across 
 
 **What it proves:** a working in-house templating/automation pipeline — the "we'd build the capability" story as a running artifact, not a promise. Template/code automation only: **no AI-generated humans, voiceover, or music** (AWS-compliant).
 
+## The Studio (main tool — design once, version everywhere)
+
+`app.html` (hosted as the site front door; standalone = `app-standalone.html`) combines layout design and copy versioning into one workflow on a single engine:
+
+1. **Design master** — lay out the blocks (logo, image, headline, subhead, proof, CTA) in your master size. Drag to move, drag the corner to resize, set copy and type in the inspector.
+2. **Adjust per size** — pick any size and **manually move/resize/hide** blocks. The auto-scale gives you a starting point; these per-size tweaks override it where the auto layout falls short (which, on real banners, is always). Tight sizes can hide blocks and swap in short copy.
+3. **Languages & audiences** — enter copy per audience and per language, toggle which sizes/languages are in scope, set brand colors, click URL, animation, and hero image. One-click EN→others draft translation (human-review before shipping).
+4. **Preview & export** — see the full matrix (audiences × languages × sizes), then **Download all (.zip)** as DV360-ready banners or **Export project (.json)** to save/reload your work.
+
+Everything renders through the one freeform engine, so what you arrange is exactly what exports. The two tools below (`builder.html`, `designer.html`) are the earlier single-purpose versions, kept for reference.
+
 ## The Designer (visual master → all sizes)
 
 `designer.html` (or `designer-standalone.html`) is the drag-and-drop layout tool. Arrange the blocks (logo, image, headline, subhead, proof, CTA) in a **master** size; every other size **auto-scales live** in the strip below. Switch to any size tab to **nudge** that one — your tweaks become per-size overrides on top of the auto-scale, so the extremes (320×50, 160×600) get a human touch without redoing the others. Adjust animation, swap the image, then **Download all (.zip)** or **Export layout** (the positions as JSON).

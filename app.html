@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>AWS Banner Studio</title>
+<script src="core/banner.js"></script>
+<script src="core/default-hero.js"></script>
+<style>
+  :root{--ink:#232F3E;--ink2:#2C3A4A;--line:#3B4858;--orange:#FF9900;--muted:#8A95A3;--txt:#EDEFF2}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Helvetica Neue",system-ui,-apple-system,Arial,sans-serif;color:var(--txt);background:#11181F;height:100vh;overflow:hidden}
+  .app{display:flex;flex-direction:column;height:100vh}
+  .topbar{display:flex;align-items:center;gap:12px;padding:9px 16px;background:var(--ink);border-bottom:1px solid var(--line);flex:none;flex-wrap:wrap}
+  .topbar h1{font-size:14px;margin:0;font-weight:800;letter-spacing:-0.2px}
+  .steps{display:flex;gap:6px}
+  .step{font-size:12px;border:1px solid var(--line);background:var(--ink2);color:#C7CDD6;border-radius:7px;padding:7px 13px;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:7px}
+  .step.on{background:var(--orange);color:var(--ink);border-color:var(--orange)}
+  .step .n{display:inline-flex;width:17px;height:17px;border-radius:50%;background:rgba(0,0,0,.18);align-items:center;justify-content:center;font-size:10px}
+  .step.on .n{background:rgba(0,0,0,.25)}
+  .sp{flex:1}
+  .btn{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--line);background:var(--ink2);color:var(--txt);border-radius:7px;padding:8px 12px;cursor:pointer}
+  .btn:hover{border-color:var(--orange)}
+  .btn.primary{background:var(--orange);color:var(--ink);border-color:var(--orange)}
+  .main{display:flex;flex:1;min-height:0}
+  .rail{width:300px;flex:none;background:var(--ink);border-right:1px solid var(--line);overflow-y:auto;padding:14px}
+  .rail.right{border-right:0;border-left:1px solid var(--line)}
+  .stagewrap{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:26px;background:#0D141A;min-width:0}
+  .stage{position:relative;background:var(--ink);border:1px solid var(--line);flex:none;box-shadow:0 10px 50px rgba(0,0,0,.45)}
+  .blk{position:absolute;cursor:grab;outline:1px dashed transparent}
+  .blk:hover{outline-color:rgba(255,153,0,.5)}
+  .blk.sel{outline:1.5px solid var(--orange)}
+  .handle{position:absolute;right:-5px;bottom:-5px;width:11px;height:11px;background:var(--orange);border:1px solid #fff;border-radius:2px;cursor:nwse-resize}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#C7CDD6;margin:0 0 9px}
+  .sec{border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
+  label{display:block;font-size:11px;color:var(--muted);margin:9px 0 4px;font-weight:600}
+  input[type=text],textarea,select,input[type=number]{width:100%;background:var(--ink2);border:1px solid var(--line);color:var(--txt);border-radius:6px;padding:7px 8px;font:inherit;font-size:12px}
+  textarea{resize:vertical;min-height:42px}
+  .row{display:flex;gap:8px}.row>div{flex:1}
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:11px;border:1px solid var(--line);background:var(--ink2);color:#C7CDD6;border-radius:20px;padding:5px 10px;cursor:pointer;font-weight:600}
+  .chip.on{background:var(--orange);color:var(--ink);border-color:var(--orange)}
+  .blocks{list-style:none;margin:0 0 10px;padding:0}
+  .blocks li{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;margin-bottom:6px;font-size:12px;cursor:pointer}
+  .blocks li.sel{border-color:var(--orange)}
+  .blocks li .nm{flex:1;text-transform:capitalize}
+  .tabsmini{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:10px}
+  .tabsmini .t{font-size:11px;border:1px solid var(--line);background:var(--ink2);color:#C7CDD6;border-radius:6px;padding:5px 8px;cursor:pointer}
+  .tabsmini .t.on{background:var(--orange);color:var(--ink);border-color:var(--orange);font-weight:800}
+  .hint{font-size:11px;color:var(--muted);line-height:1.5;background:rgba(255,153,0,.06);border:1px solid rgba(255,153,0,.25);border-radius:8px;padding:9px 10px;margin-bottom:12px}
+  .audcard{border:1px solid var(--line);border-radius:8px;padding:10px;margin-bottom:12px}
+  .audcard .hd{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .audcard .hd input{font-weight:700}
+  .x{cursor:pointer;color:var(--muted);font-size:14px;padding:2px 6px;border:1px solid var(--line);border-radius:5px}
+  .locblock{border-top:1px dashed var(--line);margin-top:8px;padding-top:8px}
+  .locblock .lc{font-size:10px;font-weight:800;color:var(--orange);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+  /* export */
+  .export{flex:1;overflow:auto;padding:18px 22px;background:#0D141A}
+  .grp{margin-bottom:22px}
+  .grp h3{font-size:13px;margin:0 0 4px;color:#fff}
+  .grp .lcrow{margin:10px 0 4px;font-size:11px;color:var(--orange);font-weight:800;letter-spacing:.8px;text-transform:uppercase}
+  .frow{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end}
+  .cell{text-align:center}
+  .cell .tw{overflow:hidden;border:1px solid var(--line);background:var(--ink);display:inline-block}
+  .cell .lab{font-size:10px;color:var(--muted);margin-top:4px}
+  .anim{display:flex;gap:7px;align-items:center;font-size:11px;color:var(--muted);flex-wrap:wrap}
+  .anim select,.anim input{width:auto}
+  .swatch{display:flex;align-items:center;gap:6px}
+  .swatch input[type=color]{width:30px;height:26px;padding:0;border-radius:5px;border:1px solid var(--line);background:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <h1>AWS Banner Studio</h1>
+    <div class="steps" id="steps"></div>
+    <span class="sp"></span>
+    <div class="anim" id="animBar">
+      <span>anim</span>
+      <select id="aPreset"></select>
+      <span>spd</span><input id="aDur" type="range" min="0" max="1000" step="50" style="width:64px">
+      <span>stag</span><input id="aStag" type="range" min="0" max="700" step="50" style="width:64px">
+      <button class="btn" id="bReplay">▶</button>
+    </div>
+    <button class="btn primary" id="bZip">⬇ Download all</button>
+  </div>
+  <div class="main" id="main"></div>
+</div>
+
+<script>
+const C = window.BannerCore, SIZES = C.SIZES;
+const sizeKey = s => s.w + 'x' + s.h;
+const sizeFromKey = k => SIZES.find(s => sizeKey(s) === k);
+const $ = id => document.getElementById(id);
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const debounce = (fn,ms)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)};};
+const LOCALES = {en:'English', es:'Spanish', de:'German', fr:'French', ja:'Japanese', 'pt-BR':'Portuguese'};
+
+const S = {
+  brand:{ colors:{ ink:'#232F3E', orange:'#FF9900', white:'#FFFFFF', hairline:'#3B4858' },
+          fontStack:'"Amazon Ember","Helvetica Neue","Segoe UI",system-ui,Arial,sans-serif' },
+  click:'https://aws.amazon.com/bedrock/',
+  anim:{ preset:'fade-up', duration:450, stagger:300, loops:1 },
+  image:{ src: window.DEFAULT_HERO || '', fit:'contain' },
+  master:{ w:300, h:250 },
+  blocks:[
+    { id:'logo',     type:'logo',     x:16, y:14,  w:64,  h:22, fontPx:16, align:'left' },
+    { id:'image',    type:'image',    x:204,y:14,  w:80,  h:80 },
+    { id:'headline', type:'headline', x:16, y:74,  w:200, h:96, fontPx:19, align:'left' },
+    { id:'subhead',  type:'subhead',  x:16, y:150, w:200, h:26, fontPx:12, align:'left' },
+    { id:'proof',    type:'proof',    x:16, y:180, w:160, h:20, fontPx:10 },
+    { id:'cta',      type:'cta',      x:16, y:210, w:120, h:28, fontPx:12 }
+  ],
+  overrides:{},
+  enabledSizes: new Set(SIZES.map(sizeKey)),
+  locales:['en','es'],
+  audiences:[ {id:'developer', label:'Developers'}, {id:'it-director', label:'IT Decision-Makers'} ],
+  content:{
+    developer:{
+      en:{ logo:'aws', headline:'Northwind shipped a fraud-detection agent in 6 weeks.', short:'Ship AI agents in weeks.', subhead:'Built on Amazon Bedrock.', proof:'6 WEEKS TO PRODUCTION', cta:'Start building' },
+      es:{ logo:'aws', headline:'Northwind lanzó un agente antifraude en 6 semanas.', short:'Crea agentes en semanas.', subhead:'Con Amazon Bedrock.', proof:'6 SEMANAS A PRODUCCIÓN', cta:'Empieza ahora' }
+    },
+    'it-director':{
+      en:{ logo:'aws', headline:'Cut model costs 40% without losing accuracy.', short:'40% lower model costs.', subhead:'Amazon Bedrock, enterprise-ready.', proof:'40% LOWER COST', cta:'See the proof' },
+      es:{ logo:'aws', headline:'Reduce costes de modelo un 40% sin perder precisión.', short:'40% menos de coste.', subhead:'Amazon Bedrock para empresas.', proof:'40% MENOS COSTE', cta:'Ver la prueba' }
+    }
+  },
+  tab:'design',
+  activeSize:'master',
+  selected:'headline',
+  designAud:'developer',
+  designLoc:'en'
+};
+
+const baseBlock = id => S.blocks.find(b=>b.id===id);
+const enabledSizeObjs = () => SIZES.filter(s=>S.enabledSizes.has(sizeKey(s)));
+const activeSizeObj = () => S.activeSize==='master' ? S.master : (sizeFromKey(S.activeSize)||S.master);
+const isMasterActive = () => S.activeSize==='master';
+
+function propagate(b, T){
+  const M=S.master, s=Math.min(T.w/M.w, T.h/M.h);
+  const cx=(b.x+b.w/2)/M.w, cy=(b.y+b.h/2)/M.h;
+  const w=b.w*s, h=b.h*s;
+  let x=cx*T.w - w/2, y=cy*T.h - h/2;
+  x=clamp(x,0,Math.max(0,T.w-w)); y=clamp(y,0,Math.max(0,T.h-h));
+  return { x:Math.round(x), y:Math.round(y), w:Math.round(w), h:Math.round(h), fontPx:Math.max(8,Math.round((b.fontPx||14)*s)) };
+}
+function ovFor(key,id){ S.overrides[key]=S.overrides[key]||{}; S.overrides[key][id]=S.overrides[key][id]||{}; return S.overrides[key][id]; }
+function store(id){
+  const b=baseBlock(id);
+  if(isMasterActive()) return { get:()=>({x:b.x,y:b.y,w:b.w,h:b.h,fontPx:b.fontPx,visible:true}), set:p=>Object.assign(b,p) };
+  const o=ovFor(S.activeSize,id);
+  return { get:()=>Object.assign(propagate(b,activeSizeObj()),o), set:p=>Object.assign(o,p) };
+}
+function txt(aud,loc){ return (S.content[aud]&&S.content[aud][loc]) ? S.content[aud][loc] : {}; }
+
+// resolve one (audience, locale, size) into renderFreeform ctx
+function ctxVariant(aud, loc, T, isMaster){
+  const k = isMaster ? null : sizeKey(T);
+  const blocks = S.blocks.map(b=>{
+    const o = (k && S.overrides[k] && S.overrides[k][b.id]) ? S.overrides[k][b.id] : {};
+    const geom = isMaster ? {x:b.x,y:b.y,w:b.w,h:b.h,fontPx:b.fontPx} : Object.assign(propagate(b,T), o);
+    const visible = (o.visible!==undefined) ? o.visible : true;
+    let text='', src, fit;
+    const t = txt(aud,loc);
+    if(b.type==='image'){ src=S.image.src; fit=S.image.fit; }
+    else if(b.type==='logo'){ text=t.logo||'aws'; }
+    else if(b.type==='headline'){ text = o.useShort ? (t.short||t.headline||'') : (t.headline||''); }
+    else { text = t[b.type]||''; }
+    return Object.assign({}, b, geom, {visible, text, src, fit, align:b.align});
+  });
+  return { brand:S.brand, size:T, click:S.click, anim:S.anim, locale:loc,
+           title:'AWS – '+aud+' – '+loc+' – '+T.w+'x'+T.h, blocks };
+}
+
+/* ============================= RENDER SHELL ============================= */
+function renderSteps(){
+  const labels=[['design','Design master'],['size','Adjust per size'],['content','Languages & audiences'],['export','Preview & export']];
+  $('steps').innerHTML='';
+  labels.forEach(([k,l],i)=>{
+    const d=document.createElement('div'); d.className='step'+(S.tab===k?' on':'');
+    d.innerHTML='<span class="n">'+(i+1)+'</span>'+l;
+    d.onclick=()=>{ S.tab=k; if(k==='design')S.activeSize='master'; renderSteps(); renderMain(); };
+    $('steps').appendChild(d);
+  });
+}
+function renderMain(){
+  const m=$('main'); m.innerHTML='';
+  if(S.tab==='design'||S.tab==='size') renderDesign(m);
+  else if(S.tab==='content') renderContent(m);
+  else renderExport(m);
+}
+
+/* ============================= DESIGN / SIZE ============================= */
+function renderDesign(m){
+  // left rail: size tabs (size step) + preview-as + block list
+  const rail=document.createElement('div'); rail.className='rail';
+  let html='';
+  if(S.tab==='size'){
+    html+='<div class="hint">Pick a size, then drag assets to fix what the auto-scale got wrong. Your moves here override the auto layout for <b>that size only</b>. Copy still comes from the master.</div>';
+    html+='<h2>Size</h2><div class="tabsmini" id="sizeTabs"></div>';
+  } else {
+    html+='<div class="hint">Lay out the <b>master</b>. Drag blocks, set copy &amp; type. Every size auto-scales from this, then you hand-tune them in step 2.</div>';
+    html+='<h2>Master size</h2><select id="masterSel"></select>';
+  }
+  html+='<h2 class="sec">Preview copy as</h2><div class="row"><div><label>Audience</label><select id="pvAud"></select></div><div><label>Language</label><select id="pvLoc"></select></div></div>';
+  html+='<h2 class="sec">Blocks</h2><ul class="blocks" id="blockList"></ul>';
+  rail.innerHTML=html;
+  m.appendChild(rail);
+
+  const sw=document.createElement('div'); sw.className='stagewrap';
+  const stage=document.createElement('div'); stage.className='stage'; stage.id='stage';
+  sw.appendChild(stage); m.appendChild(sw);
+
+  const right=document.createElement('div'); right.className='rail right'; right.id='inspector';
+  m.appendChild(right);
+
+  // populate selectors
+  if(S.tab==='size'){
+    const st=$('sizeTabs');
+    const mk=(label,key)=>{const d=document.createElement('div');d.className='t'+(S.activeSize===key?' on':'');d.textContent=label;d.onclick=()=>{S.activeSize=key;renderDesign(m);};st.appendChild(d);};
+    enabledSizeObjs().forEach(s=>mk(s.w+'×'+s.h, sizeKey(s)));
+    if(!S.enabledSizes.has(S.activeSize)) S.activeSize=sizeKey(enabledSizeObjs()[0]);
+  } else {
+    const sel=$('masterSel'); SIZES.forEach(s=>{const o=document.createElement('option');o.value=sizeKey(s);o.textContent=s.w+'×'+s.h;sel.appendChild(o);});
+    sel.value=sizeKey(S.master);
+    sel.onchange=()=>{const s=sizeFromKey(sel.value);S.master={w:s.w,h:s.h};S.overrides={};renderDesign(m);};
+  }
+  const pa=$('pvAud'); S.audiences.forEach(a=>{const o=document.createElement('option');o.value=a.id;o.textContent=a.label;pa.appendChild(o);}); pa.value=S.designAud; pa.onchange=()=>{S.designAud=pa.value;renderCanvas();};
+  const pl=$('pvLoc'); S.locales.forEach(l=>{const o=document.createElement('option');o.value=l;o.textContent=LOCALES[l]||l;pl.appendChild(o);}); pl.value=S.designLoc; pl.onchange=()=>{S.designLoc=pl.value;renderCanvas();};
+
+  renderBlockList(); renderCanvas(); renderInspector();
+}
+
+function renderCanvas(){
+  const stage=$('stage'); if(!stage) return;
+  const S0=activeSizeObj();
+  stage.style.width=S0.w+'px'; stage.style.height=S0.h+'px'; stage.innerHTML='';
+  const ctx=ctxVariant(S.designAud, S.designLoc, S0, isMasterActive());
+  ctx.blocks.forEach(b=>{
+    if(b.visible===false) return;
+    const el=document.createElement('div'); el.className='blk'+(b.id===S.selected?' sel':'');
+    styleEl(el,b);
+    const h=document.createElement('div'); h.className='handle'; el.appendChild(h);
+    makeInteractive(el,h,b.id);
+    el.addEventListener('pointerdown',()=>{S.selected=b.id;renderBlockList();renderInspector();[...stage.children].forEach(c=>c.classList.remove('sel'));el.classList.add('sel');});
+    stage.appendChild(el);
+  });
+}
+function styleEl(el,b){
+  const c=S.brand.colors;
+  el.style.cssText='position:absolute;left:'+b.x+'px;top:'+b.y+'px;width:'+b.w+'px;cursor:grab;';
+  if(b.type==='image'){ el.style.height=b.h+'px'; el.innerHTML='<img src="'+(b.src||'')+'" style="width:100%;height:100%;object-fit:'+(b.fit||'contain')+';display:block">'; return; }
+  el.style.fontSize=b.fontPx+'px'; el.style.textAlign=b.align||'left';
+  if(b.type==='logo'){el.style.fontWeight=800;el.style.letterSpacing='-0.5px';el.style.lineHeight='1';el.style.color=c.white;el.textContent=b.text;}
+  else if(b.type==='cta'){el.style.height=b.h+'px';el.style.display='flex';el.style.alignItems='center';el.style.justifyContent='center';el.style.background=c.orange;el.style.color=c.ink;el.style.fontWeight=800;el.style.borderRadius='3px';el.style.whiteSpace='nowrap';el.textContent=b.text;}
+  else if(b.type==='proof'){el.style.display='inline-block';el.style.fontWeight=700;el.style.letterSpacing='0.6px';el.style.color=c.orange;el.style.border='1px solid '+c.orange;el.style.borderRadius='2px';el.style.padding='3px 7px';el.style.whiteSpace='nowrap';el.textContent=b.text;}
+  else if(b.type==='subhead'){el.style.fontWeight=500;el.style.lineHeight='1.2';el.style.color='#D9DEE5';el.textContent=b.text;}
+  else {el.style.fontWeight=800;el.style.letterSpacing='-0.3px';el.style.lineHeight='1.1';el.style.color=c.white;el.textContent=b.text;}
+}
+function makeInteractive(el,handle,id){
+  let mode=null,sx,sy,start;
+  const down=(e,m)=>{mode=m;sx=e.clientX;sy=e.clientY;const st=store(id).get();start={x:st.x,y:st.y,w:st.w,h:st.h};el.setPointerCapture(e.pointerId);e.preventDefault();e.stopPropagation();};
+  const move=(e)=>{ if(!mode)return; const S0=activeSizeObj(),dx=e.clientX-sx,dy=e.clientY-sy;
+    if(mode==='drag'){const nx=clamp(start.x+dx,0,S0.w-el.offsetWidth),ny=clamp(start.y+dy,0,S0.h-el.offsetHeight);el.style.left=nx+'px';el.style.top=ny+'px';store(id).set({x:Math.round(nx),y:Math.round(ny)});}
+    else{const nw=clamp(start.w+dx,12,S0.w),nh=clamp(start.h+dy,10,S0.h);el.style.width=nw+'px';store(id).set({w:Math.round(nw)});const b=store(id).get();if(b.type==='image'||baseBlock(id).type==='image'||baseBlock(id).type==='cta'){el.style.height=nh+'px';store(id).set({h:Math.round(nh)});}}
+    schedulePreview();
+  };
+  const up=(e)=>{mode=null;try{el.releasePointerCapture(e.pointerId);}catch(_){}};
+  el.addEventListener('pointerdown',e=>down(e,'drag'));
+  handle.addEventListener('pointerdown',e=>down(e,'resize'));
+  el.addEventListener('pointermove',move);
+  el.addEventListener('pointerup',up);
+}
+function renderBlockList(){
+  const ul=$('blockList'); if(!ul)return; ul.innerHTML='';
+  const ctx=ctxVariant(S.designAud,S.designLoc,activeSizeObj(),isMasterActive());
+  S.blocks.forEach(b=>{
+    const rb=ctx.blocks.find(x=>x.id===b.id);
+    const li=document.createElement('li'); if(b.id===S.selected)li.className='sel';
+    const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=rb.visible!==false;
+    cb.title = isMasterActive()?'visible':'visible on this size';
+    cb.onclick=e=>{e.stopPropagation(); if(isMasterActive()){alert('Hide/show is per-size — switch to step 2 and pick a size.');cb.checked=true;return;} store(b.id).set({visible:cb.checked}); renderCanvas(); schedulePreview();};
+    const nm=document.createElement('span'); nm.className='nm'; nm.textContent=b.type;
+    li.appendChild(cb); li.appendChild(nm); li.onclick=()=>{S.selected=b.id;renderBlockList();renderInspector();renderCanvas();};
+    ul.appendChild(li);
+  });
+}
+function renderInspector(){
+  const ins=$('inspector'); if(!ins)return; const b=baseBlock(S.selected); if(!b){ins.innerHTML='';return;}
+  const perSize=!isMasterActive();
+  let h='<h2>'+b.type+(perSize?' · '+S.activeSize:' · master')+'</h2>';
+  if(b.type==='image'){
+    h+='<label>Image (shared across all)</label><input type="file" id="iImg" accept="image/*" style="font-size:11px">';
+    h+='<label>Fit</label><select id="iFit"><option value="contain">contain</option><option value="cover">cover</option></select>';
+  } else {
+    h+='<label>Copy — '+(S.audiences.find(a=>a.id===S.designAud)||{}).label+' / '+(LOCALES[S.designLoc]||S.designLoc)+'</label><textarea id="iText"></textarea>';
+    if(b.type==='headline') h+='<label>Short copy (used on tight sizes)</label><textarea id="iShort"></textarea>';
+    h+='<label>Font '+(perSize?'(this size)':'(master)')+' <span id="iFontV"></span></label><input type="range" id="iFont" min="8" max="64" step="1">';
+    if(b.type!=='proof'&&b.type!=='cta'){ h+='<label>Align</label><select id="iAlign"><option>left</option><option>center</option><option>right</option></select>'; }
+    if(perSize){
+      h+='<div class="sec"><label><input type="checkbox" id="iHide"> Hide on '+S.activeSize+'</label>';
+      if(b.type==='headline') h+='<label><input type="checkbox" id="iShortUse"> Use short copy on '+S.activeSize+'</label>';
+      h+='</div>';
+    }
+  }
+  ins.innerHTML=h;
+  const t=()=>txt(S.designAud,S.designLoc);
+  if(b.type==='image'){
+    $('iFit').value=S.image.fit; $('iFit').onchange=()=>{S.image.fit=$('iFit').value;renderCanvas();schedulePreview();};
+    $('iImg').onchange=e=>loadImage(e.target.files[0],u=>{S.image.src=u;renderCanvas();schedulePreview();});
+  } else {
+    const cur=t(); $('iText').value=cur[b.type]||''; $('iText').oninput=()=>{cur[b.type]=$('iText').value;renderCanvas();schedulePreview();};
+    if($('iShort')){ $('iShort').value=cur.short||''; $('iShort').oninput=()=>{cur.short=$('iShort').value;schedulePreview();}; }
+    const g=store(b.id).get(); $('iFont').value=g.fontPx||b.fontPx; $('iFontV').textContent=$('iFont').value+'px';
+    $('iFont').oninput=()=>{$('iFontV').textContent=$('iFont').value+'px';store(b.id).set({fontPx:+$('iFont').value});renderCanvas();schedulePreview();};
+    if($('iAlign')){$('iAlign').value=b.align||'left';$('iAlign').onchange=()=>{b.align=$('iAlign').value;renderCanvas();schedulePreview();};}
+    if(perSize){
+      const o=ovFor(S.activeSize,b.id);
+      $('iHide').checked=o.visible===false; $('iHide').onchange=()=>{store(b.id).set({visible:!$('iHide').checked});renderCanvas();renderBlockList();schedulePreview();};
+      if($('iShortUse')){$('iShortUse').checked=!!o.useShort;$('iShortUse').onchange=()=>{store(b.id).set({useShort:$('iShortUse').checked});renderCanvas();schedulePreview();};}
+    }
+  }
+}
+
+/* ============================= CONTENT ============================= */
+function renderContent(m){
+  const rail=document.createElement('div'); rail.className='rail';
+  rail.innerHTML='<h2>Languages</h2><div class="chips" id="locChips"></div>'
+    +'<h2 class="sec">Sizes</h2><div class="chips" id="sizeChips"></div>'
+    +'<h2 class="sec">Brand</h2>'
+    +'<div class="swatch"><input type="color" id="cInk"><span>Squid ink (bg)</span></div>'
+    +'<div class="swatch" style="margin-top:6px"><input type="color" id="cOrange"><span>Amazon orange</span></div>'
+    +'<label class="sec">Click-through URL</label><input type="text" id="cClick">'
+    +'<label>Hero image</label><input type="file" id="cImg" accept="image/*" style="font-size:11px">';
+  m.appendChild(rail);
+
+  const mid=document.createElement('div'); mid.className='export';
+  let html='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><h2 style="margin:0">Audiences &amp; copy</h2>'
+    +'<button class="btn" id="addAud">+ Audience</button>'
+    +'<button class="btn" id="bTranslate">✦ Auto-translate EN → others</button></div>';
+  S.audiences.forEach(a=>{
+    html+='<div class="audcard" data-aud="'+a.id+'"><div class="hd"><input type="text" class="audLabel" value="'+escAttr(a.label)+'">'
+      + (S.audiences.length>1?'<span class="x" data-x="'+a.id+'">✕</span>':'') + '</div>';
+    S.locales.forEach(loc=>{
+      const c=txt(a.id,loc);
+      html+='<div class="locblock"><div class="lc">'+(LOCALES[loc]||loc)+'</div>'
+        +field(a.id,loc,'headline','Headline',c.headline)
+        +field(a.id,loc,'short','Short headline (tight sizes)',c.short)
+        +field(a.id,loc,'subhead','Subhead',c.subhead)
+        +'<div class="row">'+field(a.id,loc,'proof','Proof',c.proof,true)+field(a.id,loc,'cta','CTA',c.cta,true)+'</div>'
+        +'</div>';
+    });
+    html+='</div>';
+  });
+  mid.innerHTML=html; m.appendChild(mid);
+
+  // locale chips
+  const lc=$('locChips');
+  Object.keys(LOCALES).forEach(l=>{const d=document.createElement('div');d.className='chip'+(S.locales.includes(l)?' on':'');d.textContent=LOCALES[l];d.onclick=()=>toggleLocale(l);lc.appendChild(d);});
+  const sc=$('sizeChips');
+  SIZES.forEach(s=>{const k=sizeKey(s);const d=document.createElement('div');d.className='chip'+(S.enabledSizes.has(k)?' on':'');d.textContent=s.w+'×'+s.h;d.onclick=()=>{S.enabledSizes.has(k)?S.enabledSizes.delete(k):S.enabledSizes.add(k);if(S.enabledSizes.size===0)S.enabledSizes.add(k);renderContent(m);};sc.appendChild(d);});
+  $('cInk').value=S.brand.colors.ink; $('cInk').oninput=()=>{S.brand.colors.ink=$('cInk').value;};
+  $('cOrange').value=S.brand.colors.orange; $('cOrange').oninput=()=>{S.brand.colors.orange=$('cOrange').value;};
+  $('cClick').value=S.click; $('cClick').oninput=()=>{S.click=$('cClick').value;};
+  $('cImg').onchange=e=>loadImage(e.target.files[0],u=>{S.image.src=u;});
+  $('addAud').onclick=()=>{const id='aud'+Date.now().toString(36);const base=S.content[S.audiences[0].id];S.content[id]={};S.locales.forEach(l=>S.content[id][l]=Object.assign({},base[l]||base.en));S.audiences.push({id,label:'New audience'});renderContent(m);};
+  $('bTranslate').onclick=doTranslate;
+  mid.querySelectorAll('.audLabel').forEach(inp=>{const id=inp.closest('.audcard').dataset.aud;inp.oninput=()=>{(S.audiences.find(a=>a.id===id)||{}).label=inp.value;};});
+  mid.querySelectorAll('[data-x]').forEach(x=>{x.onclick=()=>{const id=x.dataset.x;S.audiences=S.audiences.filter(a=>a.id!==id);delete S.content[id];if(S.designAud===id)S.designAud=S.audiences[0].id;renderContent(m);};});
+  mid.querySelectorAll('[data-f]').forEach(inp=>{inp.oninput=()=>{const[aud,loc,f]=inp.dataset.f.split('|');S.content[aud][loc][f]=inp.value;};});
+}
+function field(aud,loc,f,label,val,small){
+  const tag = small?'input type="text"':'textarea';
+  return '<div style="'+(small?'':'margin-bottom:6px')+'"><label>'+label+'</label><'+tag+' data-f="'+aud+'|'+loc+'|'+f+'" '+(small?('value="'+escAttr(val||'')+'"'):'')+'>'+(small?'':escHtml(val||''))+(small?'':'</textarea>')+'</div>';
+}
+function toggleLocale(l){
+  if(S.locales.includes(l)){ if(S.locales.length>1) S.locales=S.locales.filter(x=>x!==l); }
+  else { S.locales.push(l); S.audiences.forEach(a=>{S.content[a.id]=S.content[a.id]||{};if(!S.content[a.id][l])S.content[a.id][l]=Object.assign({},S.content[a.id].en||{});}); }
+  if(!S.locales.includes(S.designLoc))S.designLoc=S.locales[0];
+  renderContent($('main'));
+}
+async function doTranslate(){
+  const btn=$('bTranslate'); btn.textContent='Translating…'; btn.disabled=true;
+  const fields=['headline','short','subhead','proof','cta'];
+  try{
+    for(const a of S.audiences){ const en=S.content[a.id].en; if(!en)continue;
+      for(const loc of S.locales){ if(loc==='en')continue;
+        S.content[a.id][loc]=S.content[a.id][loc]||{};
+        for(const f of fields){ const src=en[f]; if(!src)continue;
+          try{ const r=await fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(src)+'&langpair=en|'+loc.split('-')[0]); const j=await r.json(); const out=j&&j.responseData&&j.responseData.translatedText; if(out) S.content[a.id][loc][f]=out; }catch(_){}}
+      }
+    }
+    renderContent($('main'));
+  } finally { btn.textContent='✦ Auto-translate EN → others'; btn.disabled=false; }
+}
+
+/* ============================= EXPORT ============================= */
+function renderExport(m){
+  const rail=document.createElement('div'); rail.className='rail';
+  const total=S.audiences.length*S.locales.length*enabledSizeObjs().length;
+  rail.innerHTML='<div class="hint">'+total+' banners: '+S.audiences.length+' audience'+(S.audiences.length>1?'s':'')+' × '+S.locales.length+' language'+(S.locales.length>1?'s':'')+' × '+enabledSizeObjs().length+' sizes — all from your one master layout + per-size tweaks.</div>'
+    +'<button class="btn primary" id="bZip2" style="width:100%">⬇ Download all (.zip)</button>'
+    +'<button class="btn" id="bProj" style="width:100%;margin-top:8px">Export project (.json)</button>'
+    +'<label class="sec">Import project</label><input type="file" id="bImp" accept="application/json" style="font-size:11px">'
+    +'<button class="btn" id="bReplay2" style="width:100%;margin-top:10px">▶ Replay animations</button>';
+  m.appendChild(rail);
+  const ex=document.createElement('div'); ex.className='export'; m.appendChild(ex);
+  S.audiences.forEach(a=>{
+    const g=document.createElement('div'); g.className='grp';
+    g.innerHTML='<h3>'+escHtml(a.label)+'</h3>';
+    S.locales.forEach(loc=>{
+      const row=document.createElement('div');
+      row.innerHTML='<div class="lcrow">'+(LOCALES[loc]||loc)+'</div>';
+      const fr=document.createElement('div'); fr.className='frow';
+      enabledSizeObjs().forEach(s=>{
+        const scale=Math.min(190/s.w, 120/s.h, 1);
+        const cell=document.createElement('div'); cell.className='cell';
+        const tw=document.createElement('div'); tw.className='tw'; tw.style.width=Math.round(s.w*scale)+'px'; tw.style.height=Math.round(s.h*scale)+'px';
+        const f=document.createElement('iframe'); f.width=s.w; f.height=s.h; f.scrolling='no'; f.style.border='0'; f.style.transformOrigin='top left'; f.style.transform='scale('+scale+')';
+        f.srcdoc=C.renderFreeform(ctxVariant(a.id,loc,s,false));
+        tw.appendChild(f);
+        cell.appendChild(tw); const lab=document.createElement('div');lab.className='lab';lab.textContent=s.w+'×'+s.h;cell.appendChild(lab);
+        fr.appendChild(cell);
+      });
+      row.appendChild(fr); g.appendChild(row);
+    });
+    ex.appendChild(g);
+  });
+  $('bZip2').onclick=downloadZip; $('bProj').onclick=exportProject;
+  $('bReplay2').onclick=()=>document.querySelectorAll('.export iframe').forEach(f=>f.srcdoc=f.srcdoc);
+  $('bImp').onchange=e=>importProject(e.target.files[0]);
+}
+
+function allFiles(){
+  const files=[];
+  S.audiences.forEach(a=>S.locales.forEach(loc=>enabledSizeObjs().forEach(s=>{
+    files.push({ name:a.id+'/'+loc+'/'+s.w+'x'+s.h+'/index.html', data:C.renderFreeform(ctxVariant(a.id,loc,s,false)) });
+  })));
+  return files;
+}
+function downloadZip(){ downloadFile('aws-banners.zip', makeZip(allFiles())); }
+function exportProject(){
+  const o=Object.assign({},S,{enabledSizes:[...S.enabledSizes]});
+  delete o.tab; delete o.selected; delete o.activeSize;
+  downloadFile('aws-banner-project.json', new Blob([JSON.stringify(o,null,2)],{type:'application/json'}));
+}
+function importProject(file){ if(!file)return; const r=new FileReader(); r.onload=()=>{ try{ const o=JSON.parse(r.result);
+  Object.keys(o).forEach(k=>{ if(k==='enabledSizes')S.enabledSizes=new Set(o[k]); else S[k]=o[k]; });
+  S.tab='design'; S.activeSize='master'; S.selected='headline';
+  if(!S.audiences.find(a=>a.id===S.designAud))S.designAud=S.audiences[0].id;
+  if(!S.locales.includes(S.designLoc))S.designLoc=S.locales[0];
+  renderSteps(); buildAnim(); renderMain(); }catch(err){alert('Could not read project file.');} }; r.readAsText(file); }
+
+/* ============================= SHARED UTIL ============================= */
+const schedulePreview=debounce(()=>{ /* preview only re-renders when on export tab */ if(S.tab==='export'){} },200);
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escAttr(s){return escHtml(s).replace(/"/g,'&quot;');}
+function buildAnim(){
+  const p=$('aPreset'); p.innerHTML=''; Object.keys(C.ANIMATIONS).forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=C.ANIMATIONS[k].label;p.appendChild(o);}); p.value=S.anim.preset;
+  p.onchange=()=>{S.anim.preset=p.value;};
+  $('aDur').value=S.anim.duration; $('aStag').value=S.anim.stagger;
+  $('aDur').oninput=()=>{S.anim.duration=+$('aDur').value;};
+  $('aStag').oninput=()=>{S.anim.stagger=+$('aStag').value;};
+}
+function loadImage(file,cb){ if(!file)return; const r=new FileReader(); r.onload=()=>{const img=new Image();img.onload=()=>{const max=800,sc=Math.min(1,max/Math.max(img.width,img.height));const cv=document.createElement('canvas');cv.width=Math.round(img.width*sc);cv.height=Math.round(img.height*sc);cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);cb(cv.toDataURL(/jpe?g/i.test(file.type)?'image/jpeg':'image/png',0.85));};img.src=r.result;};r.readAsDataURL(file); }
+function downloadFile(name,content){ const blob=content instanceof Blob?content:new Blob([content]); const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(u),1500); }
+const CRC=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC[(c^u8[i])&0xFF]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
+function makeZip(files){const enc=new TextEncoder(),chunks=[],central=[];let off=0;const u16=n=>[n&255,(n>>8)&255],u32=n=>[n&255,(n>>8)&255,(n>>16)&255,(n>>24)&255];
+  files.forEach(f=>{const name=enc.encode(f.name),data=enc.encode(f.data),crc=crc32(data);
+    const lo=[].concat(u32(0x04034b50),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0));
+    chunks.push(new Uint8Array(lo),name,data);
+    const ce=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(off));
+    central.push(new Uint8Array(ce),name); off+=lo.length+name.length+data.length;});
+  let cs=0;central.forEach(c=>cs+=c.length);const start=off;
+  const eo=new Uint8Array([].concat(u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(cs),u32(start),u16(0)));
+  const all=chunks.concat(central,[eo]);let tot=0;all.forEach(a=>tot+=a.length);const out=new Uint8Array(tot);let p=0;all.forEach(a=>{out.set(a,p);p+=a.length;});return new Blob([out],{type:'application/zip'});}
+
+/* topbar zip + replay also work from anywhere */
+$('bZip').onclick=downloadZip;
+$('bReplay').onclick=()=>document.querySelectorAll('iframe').forEach(f=>f.srcdoc=f.srcdoc);
+
+buildAnim(); renderSteps(); renderMain();
+</script>
+</body>
+</html>

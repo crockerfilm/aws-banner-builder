@@ -107,8 +107,10 @@ console.log(line);
 function writeDistIndex() {
   const distRoot = path.join(ROOT, 'dist');
   // front door of the published site = the builder app (single self-contained file)
-  try { fs.copyFileSync(path.join(ROOT, 'builder-standalone.html'), path.join(distRoot, 'index.html')); }
-  catch (e) { console.warn('  ! could not copy builder to dist/index.html'); }
+  // front door = the combined Studio app; builder + designer kept as secondary
+  try { fs.copyFileSync(path.join(ROOT, 'app-standalone.html'), path.join(distRoot, 'index.html')); }
+  catch (e) { console.warn('  ! could not copy app to dist/index.html'); }
+  try { fs.copyFileSync(path.join(ROOT, 'builder-standalone.html'), path.join(distRoot, 'builder.html')); } catch (e) {}
   try { fs.copyFileSync(path.join(ROOT, 'designer-standalone.html'), path.join(distRoot, 'designer.html')); } catch (e) {}
   const projects = fs.readdirSync(distRoot).filter(d => {
     try { return fs.statSync(path.join(distRoot, d)).isDirectory() && fs.existsSync(path.join(distRoot, d, 'preview.html')); }
@@ -120,7 +122,8 @@ function writeDistIndex() {
 h1{font-size:22px;letter-spacing:-0.3px}.r{display:inline-block;width:34px;height:4px;background:#FF9900;border-radius:2px;margin:10px 0 20px}
 a{color:#FF9900;font-weight:700;text-decoration:none}a:hover{text-decoration:underline}li{margin:10px 0;font-size:15px}p{color:#C7CDD6;font-size:14px;line-height:1.5}</style></head>
 <body><h1>AWS DV360 Banner Builder</h1><div class="r"></div>
-<p><a href="index.html">▶ Open the Builder</a> &nbsp;·&nbsp; <a href="designer.html">▶ Open the Designer</a></p>
+<p><a href="index.html">▶ Open the Studio (design + version + export)</a></p>
+<p style="font-size:13px;color:#8A95A3">Earlier single-purpose tools: <a href="builder.html">Builder</a> · <a href="designer.html">Designer</a></p>
 <p>Pre-generated banner sets:</p>
 <ul>${links || '<li>(run <code>node build.js</code> to generate)</li>'}</ul></body></html>`;
   fs.writeFileSync(path.join(distRoot, 'gallery.html'), html);
