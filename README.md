@@ -4,6 +4,12 @@ Brief in → DV360-spec HTML5 animated banners out. One concept versions across 
 
 **What it proves:** a working in-house templating/automation pipeline — the "we'd build the capability" story as a running artifact, not a promise. Template/code automation only: **no AI-generated humans, voiceover, or music** (AWS-compliant).
 
+## The Designer (visual master → all sizes)
+
+`designer.html` (or `designer-standalone.html`) is the drag-and-drop layout tool. Arrange the blocks (logo, image, headline, subhead, proof, CTA) in a **master** size; every other size **auto-scales live** in the strip below. Switch to any size tab to **nudge** that one — your tweaks become per-size overrides on top of the auto-scale, so the extremes (320×50, 160×600) get a human touch without redoing the others. Adjust animation, swap the image, then **Download all (.zip)** or **Export layout** (the positions as JSON).
+
+Honest note on the model: auto-scaling a master across very different aspect ratios gets you ~80% instantly; the per-size nudge is the deliberate last 20%. That automate-the-bulk / craft-the-edges split is the point, not a limitation — it's how the pro tools work too.
+
 ## The Builder (visual app)
 
 `builder.html` is a dedicated, no-server app — **double-click it** (or open `builder-standalone.html`, a single self-contained file). It's the day-to-day tool:
@@ -80,6 +86,17 @@ Images are auto-downscaled (max 700px) and inlined as base64, so every banner st
 - **More sizes:** add to `config/sizes.json` with an `archetype` (`box`, `billboard`, `leaderboard`, `skyscraper`, `halfpage`, `mobile`).
 - **Real brand font:** swap `fontStack` in `config/brand.json` to a bundled `Amazon Ember` woff2 (drop it next to the banner and `@font-face` it).
 - **Real logo:** replace the text `logoText` with the locked `aws` asset in `lib/render.js`.
+
+## Spec-check
+
+Every `node build.js` prints a pass/fail table for all generated banners. To check assets independently — the builder's "Download all" zip, or creatives a designer hands back — use the standalone checker:
+
+```bash
+node check.js                 # everything under dist/
+node check.js aws-banners.zip # a zip (auto-unzips + checks)
+node check.js ./some-folder   # a folder of creatives
+```
+It validates dimensions (and cross-checks the `ad.size` tag against the WxH in the filename), clickTag-in-head, file weight, SSL/self-containment, and single-play animation, then lists any failures. For the authoritative pre-flight before a live campaign, also run a zip through Google's HTML5 validator (h5validator.appspot.com).
 
 ## DV360 readiness
 

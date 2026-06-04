@@ -143,5 +143,70 @@
       + '<script>'+js+'<\/script>\n</body>\n</html>';
   }
 
-  return { SIZES, LAYOUTS, ANIMATIONS, DEFAULT_ANIM, esc, visualSVG, renderBanner };
+  // ---- Freeform layout (Designer page): blocks carry absolute px positions for THIS size ----
+  function freeformBlock(b, c) {
+    if (b.visible === false) return '';
+    const drMap = { logo:0, headline:1, image:2, subhead:2, proof:3, cta:4 };
+    const dr = (drMap[b.type] != null) ? drMap[b.type] : 1;
+    let s = 'position:absolute;left:'+b.x+'px;top:'+b.y+'px;width:'+b.w+'px;';
+    let inner = '';
+    if (b.type === 'image') {
+      s += 'height:'+b.h+'px;';
+      inner = '<img src="'+(b.src||'')+'" alt="" style="width:100%;height:100%;object-fit:'+(b.fit||'contain')+';display:block">';
+    } else if (b.type === 'logo') {
+      s += 'font-weight:800;letter-spacing:-0.5px;line-height:1;font-size:'+b.fontPx+'px;color:'+(b.color||c.white)+';text-align:'+(b.align||'left')+';';
+      inner = esc(b.text);
+    } else if (b.type === 'cta') {
+      s += 'height:'+b.h+'px;display:flex;align-items:center;justify-content:center;background:'+c.orange+';color:'+c.ink+';font-weight:800;border-radius:3px;font-size:'+b.fontPx+'px;white-space:nowrap;';
+      inner = esc(b.text);
+    } else if (b.type === 'proof') {
+      s += 'font-weight:700;letter-spacing:0.6px;color:'+c.orange+';border:1px solid '+c.orange+';border-radius:2px;padding:3px 7px;font-size:'+b.fontPx+'px;display:inline-block;white-space:nowrap;';
+      inner = esc(b.text);
+    } else if (b.type === 'subhead') {
+      s += 'font-weight:500;line-height:1.2;color:'+(b.color||'#D9DEE5')+';font-size:'+b.fontPx+'px;text-align:'+(b.align||'left')+';';
+      inner = esc(b.text);
+    } else { // headline / generic text
+      s += 'font-weight:800;letter-spacing:-0.3px;line-height:1.1;color:'+(b.color||c.white)+';font-size:'+b.fontPx+'px;text-align:'+(b.align||'left')+';';
+      inner = esc(b.text);
+    }
+    return '<div class="region" data-r="'+dr+'" style="'+s+'">'+inner+'</div>';
+  }
+
+  function renderFreeform(ctx) {
+    const c = ctx.brand.colors, size = ctx.size;
+    const a = Object.assign({}, DEFAULT_ANIM, ctx.anim || {});
+    const A = ANIMATIONS[a.preset] || ANIMATIONS['fade-up'];
+    const dur = Math.max(0, +a.duration || 0), stag = Math.max(0, +a.stagger || 0), loops = Math.min(3, Math.max(1, +a.loops || 1));
+    const click = ctx.click || '#', locale = ctx.locale || 'en';
+    const blocksHTML = (ctx.blocks || []).map(b => freeformBlock(b, c)).join('');
+    const transition = dur > 0 ? ('opacity '+dur+'ms ease, transform '+dur+'ms ease, clip-path '+dur+'ms ease') : 'none';
+    const css = [
+      '*{margin:0;padding:0;box-sizing:border-box}',
+      'html,body{width:'+size.w+'px;height:'+size.h+'px;overflow:hidden}',
+      '#ad{position:relative;width:'+size.w+'px;height:'+size.h+'px;background:'+c.ink+';font-family:'+ctx.brand.fontStack+';color:'+c.white+';cursor:pointer;overflow:hidden;border:1px solid '+c.hairline+'}',
+      '.region{'+A.init+';transition:'+transition+'}',
+      '#ad.play .region{'+A.played+'}',
+      '#ad.play .region[data-r="0"]{transition-delay:'+(0*stag)+'ms}',
+      '#ad.play .region[data-r="1"]{transition-delay:'+(1*stag)+'ms}',
+      '#ad.play .region[data-r="2"]{transition-delay:'+(2*stag)+'ms}',
+      '#ad.play .region[data-r="3"]{transition-delay:'+(3*stag)+'ms}',
+      '#ad.play .region[data-r="4"]{transition-delay:'+(4*stag)+'ms}',
+      '@media (prefers-reduced-motion: reduce){.region{transition:none}}'
+    ].join('\n');
+    const js = '(function(){'
+      + 'var ad=document.getElementById("ad");'
+      + 'ad.addEventListener("click",function(){window.open(window.clickTag,"_blank");});'
+      + 'var loops='+loops+',cycle='+((4*stag)+dur+200)+',count=0;'
+      + 'function run(){ad.classList.add("play");count++;if(count<loops){setTimeout(function(){ad.classList.remove("play");requestAnimationFrame(function(){requestAnimationFrame(run);});},cycle+600);}}'
+      + 'requestAnimationFrame(function(){requestAnimationFrame(run);});})();';
+    return '<!doctype html>\n<html lang="'+locale+'">\n<head>\n<meta charset="utf-8">\n'
+      + '<meta name="viewport" content="width='+size.w+',height='+size.h+'">\n'
+      + '<meta name="ad.size" content="width='+size.w+',height='+size.h+'">\n'
+      + '<script type="text/javascript">var clickTag = '+JSON.stringify(click)+';<\/script>\n'
+      + '<title>'+esc(ctx.title||'')+'</title>\n<style>'+css+'</style>\n</head>\n<body>\n'
+      + '<div id="ad" role="link">'+blocksHTML+'</div>\n'
+      + '<script>'+js+'<\/script>\n</body>\n</html>';
+  }
+
+  return { SIZES, LAYOUTS, ANIMATIONS, DEFAULT_ANIM, esc, visualSVG, renderBanner, renderFreeform };
 });
