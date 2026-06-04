@@ -1,0 +1,12 @@
+{
+  "name": "aws-banner-builder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Brief in \u2192 DV360-spec HTML5 banners out. Versions one concept across sizes, audiences, and languages. Zero dependencies.",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

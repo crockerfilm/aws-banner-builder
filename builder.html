@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>AWS DV360 Banner Builder</title>
+<script src="core/banner.js"></script>
+<script src="core/default-hero.js"></script>
+<style>
+  :root{ --ink:#232F3E; --ink2:#2C3A4A; --line:#3B4858; --orange:#FF9900; --muted:#8A95A3; --txt:#EDEFF2; }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Helvetica Neue",system-ui,-apple-system,Arial,sans-serif;color:var(--txt);background:#11181F;height:100vh;overflow:hidden}
+  .app{display:flex;height:100vh}
+  /* ---- control panel ---- */
+  .panel{width:380px;flex:none;background:var(--ink);border-right:1px solid var(--line);overflow-y:auto;padding:0 0 60px}
+  .phead{position:sticky;top:0;background:var(--ink);z-index:5;padding:16px 18px;border-bottom:1px solid var(--line)}
+  .phead h1{font-size:15px;margin:0;letter-spacing:-0.2px}
+  .phead .sub{font-size:11px;color:var(--muted);margin-top:2px}
+  details{border-bottom:1px solid var(--line)}
+  summary{cursor:pointer;padding:13px 18px;font-size:12px;font-weight:800;letter-spacing:0.7px;text-transform:uppercase;color:#C7CDD6;list-style:none}
+  summary::-webkit-details-marker{display:none}
+  summary:before{content:"▸";color:var(--orange);margin-right:8px;font-size:10px;display:inline-block;transition:transform .15s}
+  details[open] summary:before{transform:rotate(90deg)}
+  .body{padding:4px 18px 16px}
+  label{display:block;font-size:11px;color:var(--muted);margin:10px 0 4px;font-weight:600}
+  input[type=text],input[type=url],textarea,select{width:100%;background:var(--ink2);border:1px solid var(--line);color:var(--txt);border-radius:6px;padding:8px 9px;font:inherit;font-size:12.5px}
+  textarea{resize:vertical;min-height:38px;line-height:1.3}
+  input[type=range]{width:100%}
+  .row2{display:flex;gap:10px}.row2>div{flex:1}
+  .colorrow{display:flex;align-items:center;gap:8px;margin-top:6px}
+  .colorrow input[type=color]{width:34px;height:28px;border:1px solid var(--line);border-radius:6px;background:none;padding:0}
+  .colorrow span{font-size:11px;color:var(--muted)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+  .chip{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:5px 10px;cursor:pointer;user-select:none;color:#C7CDD6}
+  .chip.on{background:var(--orange);color:var(--ink);border-color:var(--orange);font-weight:700}
+  .aud{border:1px solid var(--line);border-radius:8px;padding:10px;margin-top:10px;background:rgba(255,255,255,.02)}
+  .aud .audtop{display:flex;gap:8px;align-items:center}
+  .aud .audtop input{font-weight:700}
+  .loc{margin-top:8px;border-top:1px dashed var(--line);padding-top:8px}
+  .loc .lc{font-size:10px;font-weight:800;color:var(--orange);letter-spacing:1px}
+  .btn{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--line);background:var(--ink2);color:var(--txt);border-radius:6px;padding:8px 12px;cursor:pointer}
+  .btn:hover{border-color:var(--orange)}
+  .btn.primary{background:var(--orange);color:var(--ink);border-color:var(--orange)}
+  .btn.sm{padding:5px 9px;font-size:11px}
+  .btn.x{padding:4px 8px;color:var(--muted)}
+  .addbtn{margin-top:10px}
+  .val{float:right;color:#C7CDD6;font-weight:700}
+  .hint{font-size:10.5px;color:var(--muted);margin-top:6px;line-height:1.4}
+  /* ---- preview ---- */
+  .stage{flex:1;background:#EDEFF2;color:var(--ink);overflow:auto;padding:22px 26px}
+  .bar{position:sticky;top:0;background:#EDEFF2;z-index:4;display:flex;align-items:center;gap:10px;padding-bottom:14px;border-bottom:1px solid #D5DAE0;margin-bottom:18px}
+  .bar .t{font-size:14px;font-weight:800}
+  .bar .meta{font-size:12px;color:#5A6675}
+  .bar .sp{flex:1}
+  h2.grp{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:#5A6675;margin:24px 0 12px;border-bottom:1px solid #D5DAE0;padding-bottom:7px}
+  .grid{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+  figure{margin:0}
+  .frame{box-shadow:0 4px 16px rgba(35,47,62,.16);background:var(--ink)}
+  iframe{display:block;border:0}
+  figcaption{font-size:11px;color:#5A6675;margin-top:7px;font-weight:700;display:flex;justify-content:space-between;gap:10px}
+  figcaption a{color:#0A7;text-decoration:none;font-weight:700}
+  .count{background:var(--ink);color:#fff;border-radius:6px;padding:6px 11px;font-size:12px;font-weight:700}
+  .count b{color:var(--orange)}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ============ CONTROLS ============ -->
+  <div class="panel">
+    <div class="phead"><h1>AWS DV360 Banner Builder</h1><div class="sub">Edit inputs → preview updates live → export</div></div>
+
+    <details open><summary>Brief</summary><div class="body" id="s-brief">
+      <label>Product</label><input type="text" id="f-product">
+      <label>Vertical</label><input type="text" id="f-vertical">
+      <div class="row2"><div><label>Client</label><input type="text" id="f-client"></div><div><label>Logo text</label><input type="text" id="f-logo"></div></div>
+      <label>Click-through URL</label><input type="url" id="f-click">
+    </div></details>
+
+    <details><summary>Brand colors</summary><div class="body" id="s-brand"></div></details>
+
+    <details open><summary>Animation</summary><div class="body" id="s-anim">
+      <label>Preset</label><select id="f-preset"></select>
+      <label>Duration <span class="val" id="v-dur"></span></label><input type="range" id="f-dur" min="0" max="1200" step="50">
+      <label>Stagger <span class="val" id="v-stag"></span></label><input type="range" id="f-stag" min="0" max="800" step="50">
+      <label>Loops <span class="val" id="v-loops"></span></label><input type="range" id="f-loops" min="1" max="3" step="1">
+      <div class="hint">Loops capped at 3 and the banner always holds its end frame (DV360-safe).</div>
+    </div></details>
+
+    <details><summary>Image</summary><div class="body" id="s-image">
+      <label>Hero image</label><input type="file" id="f-hero" accept="image/*">
+      <div class="row2" style="margin-top:8px"><div><label>Fit</label><select id="f-fit"><option value="contain">contain (logo/graphic)</option><option value="cover">cover (photo)</option></select></div><div><label>&nbsp;</label><button class="btn sm" id="f-heroclear">Clear image</button></div></div>
+      <label>Logo image (optional)</label><input type="file" id="f-logoimg" accept="image/*">
+      <div class="hint">Images are downscaled in your browser and inlined, so banners stay self-contained.</div>
+    </div></details>
+
+    <details open><summary>Formats</summary><div class="body"><div class="chips" id="s-sizes"></div></div></details>
+
+    <details open><summary>Languages</summary><div class="body"><div class="chips" id="s-locales"></div>
+      <button class="btn primary" id="b-translate" style="margin-top:12px;width:100%">✦ Auto-translate EN → other languages</button>
+      <div class="hint">Fills every enabled non-English language from the English copy. Draft quality (free machine translation) — have a native speaker review before anything client-facing. You can edit any field by hand afterward.</div>
+    </div></details>
+
+    <details open><summary>Audiences &amp; copy</summary><div class="body" id="s-aud"></div>
+      <div class="body" style="padding-top:0"><button class="btn addbtn" id="add-aud">+ Add audience</button></div>
+    </details>
+  </div>
+
+  <!-- ============ PREVIEW ============ -->
+  <div class="stage">
+    <div class="bar">
+      <div><div class="t" id="p-title"></div><div class="meta" id="p-meta"></div></div>
+      <div class="sp"></div>
+      <span class="count" id="p-count"></span>
+      <button class="btn" id="b-replay">▶ Replay</button>
+      <button class="btn" id="b-brief">Export brief.json</button>
+      <button class="btn primary" id="b-zip">Download all (.zip)</button>
+    </div>
+    <div id="p-body"></div>
+  </div>
+</div>
+
+<script>
+const C = window.BannerCore;
+const ALL_LOCALES = { en:"English", es:"Spanish", fr:"French", de:"German", pt:"Portuguese", it:"Italian" };
+const COPY_FIELDS = [["headline","Headline"],["short","Short (728x90 / 320x50)"],["subhead","Subhead"],["proof","Proof chip"],["cta","CTA"]];
+
+let state = {
+  product:"Amazon Bedrock", vertical:"Financial Services",
+  client:{ name:"Northwind Financial (fictional)", logoText:"aws" },
+  clickThrough:"https://aws.amazon.com/bedrock/",
+  brand:{ colors:{ ink:"#232F3E", inkLight:"#37475A", orange:"#FF9900", white:"#FFFFFF", hairline:"#3B4858" },
+          fontStack:'"Amazon Ember","Helvetica Neue","Segoe UI",system-ui,Arial,sans-serif' },
+  animation:{ preset:"fade-up", duration:450, stagger:300, loops:1 },
+  imageFit:"contain",
+  heroDataURI: window.DEFAULT_HERO || null,
+  logoDataURI: null,
+  sizes:["box","billboard","leaderboard","skyscraper","halfpage","mobile"],
+  locales:["en","es"],
+  audiences:[
+    { id:"developer", label:"Developer", copy:{
+      en:{ headline:"Northwind shipped a fraud-detection agent in 6 weeks.", short:"Build agents in weeks.", subhead:"Built on Amazon Bedrock.", proof:"6 WEEKS TO PRODUCTION", cta:"Start building" },
+      es:{ headline:"Northwind creó un agente antifraude en 6 semanas.", short:"Crea agentes en semanas.", subhead:"Con Amazon Bedrock.", proof:"6 SEMANAS A PRODUCCIÓN", cta:"Empieza a crear" } } },
+    { id:"it-director", label:"IT Director", copy:{
+      en:{ headline:"Northwind cut fraud review time by 60%.", short:"Cut review time 60%.", subhead:"With agentic AI on Amazon Bedrock.", proof:"60% FASTER REVIEW", cta:"See how" },
+      es:{ headline:"Northwind redujo el tiempo de revisión un 60%.", short:"Revisión 60% más rápida.", subhead:"Con IA agentica en Amazon Bedrock.", proof:"60% MÁS RÁPIDO", cta:"Descubre cómo" } } }
+  ]
+};
+
+const $=id=>document.getElementById(id);
+const debounce=(fn,ms)=>{let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms)}};
+const schedule=debounce(renderPreviews,160);
+const enabledSizes=()=>C.SIZES.filter(s=>state.sizes.includes(s.archetype));
+const resolved=(a,loc)=>a.copy[loc]||a.copy.en||{};
+
+// ---------- build banner html ----------
+function renderOne(a,loc,s){
+  return C.renderBanner({
+    brand:state.brand, size:s, locale:loc, content:resolved(a,loc),
+    click:state.clickThrough, logoText:state.client.logoText,
+    heroDataURI:state.heroDataURI, logoDataURI:state.logoDataURI, imageFit:state.imageFit,
+    anim:state.animation, title:state.product+" – "+a.label+" – "+s.w+"x"+s.h+" – "+loc
+  });
+}
+function listBanners(){
+  const out=[];
+  state.audiences.forEach(a=>state.locales.forEach(loc=>enabledSizes().forEach(s=>out.push({a,loc,s}))));
+  return out;
+}
+
+// ---------- preview ----------
+function renderPreviews(){
+  const items=listBanners();
+  $("p-title").textContent=state.product+" — "+state.vertical;
+  $("p-meta").textContent="one brief → "+items.length+" DV360 banners · "+state.client.name;
+  $("p-count").innerHTML="<b>"+items.length+"</b> banners";
+  const groups={};
+  items.forEach(it=>{const k=it.a.label+" · "+it.loc.toUpperCase();(groups[k]=groups[k]||[]).push(it)});
+  const body=$("p-body"); body.innerHTML="";
+  Object.keys(groups).forEach(k=>{
+    const h=document.createElement("h2");h.className="grp";h.textContent=k;body.appendChild(h);
+    const grid=document.createElement("div");grid.className="grid";
+    groups[k].forEach(it=>{
+      const fig=document.createElement("figure");
+      const frame=document.createElement("div");frame.className="frame";frame.style.width=it.s.w+"px";frame.style.height=it.s.h+"px";
+      const ifr=document.createElement("iframe");ifr.width=it.s.w;ifr.height=it.s.h;ifr.scrolling="no";
+      ifr.srcdoc=renderOne(it.a,it.loc,it.s);
+      frame.appendChild(ifr);
+      const cap=document.createElement("figcaption");
+      const span=document.createElement("span");span.textContent=it.s.w+"×"+it.s.h+" "+it.s.label;
+      const dl=document.createElement("a");dl.href="#";dl.textContent="download";
+      dl.onclick=e=>{e.preventDefault();downloadFile((it.a.id+"_"+it.loc+"_"+it.s.w+"x"+it.s.h)+".html",renderOne(it.a,it.loc,it.s),"text/html")};
+      cap.appendChild(span);cap.appendChild(dl);
+      fig.appendChild(frame);fig.appendChild(cap);grid.appendChild(fig);
+    });
+    body.appendChild(grid);
+  });
+}
+
+// ---------- controls wiring ----------
+function bindText(id,getter,setter){const el=$(id);el.value=getter();el.oninput=()=>{setter(el.value);schedule()}}
+function buildControls(){
+  bindText("f-product",()=>state.product,v=>state.product=v);
+  bindText("f-vertical",()=>state.vertical,v=>state.vertical=v);
+  bindText("f-client",()=>state.client.name,v=>state.client.name=v);
+  bindText("f-logo",()=>state.client.logoText,v=>state.client.logoText=v);
+  bindText("f-click",()=>state.clickThrough,v=>state.clickThrough=v);
+
+  // brand colors
+  const cwrap=$("s-brand");cwrap.innerHTML="";
+  [["ink","Background (squid ink)"],["orange","Accent / CTA"],["hairline","Hairline / lines"]].forEach(([key,lbl])=>{
+    const row=document.createElement("div");row.className="colorrow";
+    const ci=document.createElement("input");ci.type="color";ci.value=state.brand.colors[key];
+    ci.oninput=()=>{state.brand.colors[key]=ci.value;schedule()};
+    const sp=document.createElement("span");sp.textContent=lbl;
+    row.appendChild(ci);row.appendChild(sp);cwrap.appendChild(row);
+  });
+
+  // animation
+  const ps=$("f-preset");ps.innerHTML="";
+  Object.keys(C.ANIMATIONS).forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=C.ANIMATIONS[k].label;ps.appendChild(o)});
+  ps.value=state.animation.preset;ps.onchange=()=>{state.animation.preset=ps.value;schedule()};
+  const dur=$("f-dur"),stag=$("f-stag"),lp=$("f-loops");
+  const sync=()=>{$("v-dur").textContent=state.animation.duration+"ms";$("v-stag").textContent=state.animation.stagger+"ms";$("v-loops").textContent=state.animation.loops};
+  dur.value=state.animation.duration;stag.value=state.animation.stagger;lp.value=state.animation.loops;sync();
+  dur.oninput=()=>{state.animation.duration=+dur.value;sync();schedule()};
+  stag.oninput=()=>{state.animation.stagger=+stag.value;sync();schedule()};
+  lp.oninput=()=>{state.animation.loops=+lp.value;sync();schedule()};
+
+  // image
+  $("f-fit").value=state.imageFit;$("f-fit").onchange=()=>{state.imageFit=$("f-fit").value;schedule()};
+  $("f-hero").onchange=e=>loadImage(e.target.files[0],uri=>{state.heroDataURI=uri;schedule()});
+  $("f-logoimg").onchange=e=>loadImage(e.target.files[0],uri=>{state.logoDataURI=uri;schedule()});
+  $("f-heroclear").onclick=()=>{state.heroDataURI=null;$("f-hero").value="";schedule()};
+
+  // sizes
+  const sw=$("s-sizes");sw.innerHTML="";
+  C.SIZES.forEach(s=>{
+    const c=document.createElement("div");c.className="chip"+(state.sizes.includes(s.archetype)?" on":"");
+    c.textContent=s.w+"×"+s.h;
+    c.onclick=()=>{const i=state.sizes.indexOf(s.archetype);if(i<0)state.sizes.push(s.archetype);else state.sizes.splice(i,1);c.classList.toggle("on");schedule()};
+    sw.appendChild(c);
+  });
+
+  // locales
+  const lw=$("s-locales");lw.innerHTML="";
+  Object.keys(ALL_LOCALES).forEach(code=>{
+    const c=document.createElement("div");c.className="chip"+(state.locales.includes(code)?" on":"");
+    c.textContent=ALL_LOCALES[code];
+    c.onclick=()=>{
+      const i=state.locales.indexOf(code);
+      if(i<0){state.locales.push(code);state.audiences.forEach(a=>{if(!a.copy[code])a.copy[code]=Object.assign({},a.copy.en||{})});}
+      else state.locales.splice(i,1);
+      c.classList.toggle("on");buildAudiences();schedule();
+    };
+    lw.appendChild(c);
+  });
+
+  buildAudiences();
+}
+
+function buildAudiences(){
+  const wrap=$("s-aud");wrap.innerHTML="";
+  state.audiences.forEach((a,idx)=>{
+    const card=document.createElement("div");card.className="aud";
+    const top=document.createElement("div");top.className="audtop";
+    const li=document.createElement("input");li.type="text";li.value=a.label;li.oninput=()=>{a.label=li.value;schedule()};
+    const rm=document.createElement("button");rm.className="btn x";rm.textContent="✕";
+    rm.onclick=()=>{state.audiences.splice(idx,1);buildAudiences();schedule()};
+    top.appendChild(li);top.appendChild(rm);card.appendChild(top);
+    state.locales.forEach(loc=>{
+      a.copy[loc]=a.copy[loc]||{};
+      const lc=document.createElement("div");lc.className="loc";
+      const tag=document.createElement("div");tag.className="lc";tag.textContent=(ALL_LOCALES[loc]||loc).toUpperCase();lc.appendChild(tag);
+      COPY_FIELDS.forEach(([key,lbl])=>{
+        const l=document.createElement("label");l.textContent=lbl;lc.appendChild(l);
+        const ta=document.createElement(key==="headline"?"textarea":"input");
+        if(ta.tagName==="INPUT")ta.type="text";
+        ta.value=a.copy[loc][key]||"";
+        ta.oninput=()=>{a.copy[loc][key]=ta.value;schedule()};
+        lc.appendChild(ta);
+      });
+      card.appendChild(lc);
+    });
+    wrap.appendChild(card);
+  });
+}
+$("add-aud").onclick=()=>{
+  const seed={};state.locales.forEach(l=>seed[l]={headline:"New headline",short:"Short",subhead:"Subhead",proof:"PROOF",cta:"Learn more"});
+  state.audiences.push({id:"audience-"+(state.audiences.length+1),label:"New Audience",copy:seed});
+  buildAudiences();schedule();
+};
+
+// ---------- image load + downscale (canvas) ----------
+function loadImage(file,cb){
+  if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=700,scale=Math.min(1,max/Math.max(img.width,img.height));
+      const cv=document.createElement("canvas");cv.width=Math.round(img.width*scale);cv.height=Math.round(img.height*scale);
+      cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+      const isJpg=/jpe?g/i.test(file.type);
+      cb(cv.toDataURL(isJpg?"image/jpeg":"image/png",0.85));
+    };
+    img.src=r.result;
+  };
+  r.readAsDataURL(file);
+}
+
+// ---------- exports ----------
+function downloadFile(name,content,mime){
+  const blob=content instanceof Blob?content:new Blob([content],{type:mime||"application/octet-stream"});
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=name;a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+$("b-replay").onclick=()=>document.querySelectorAll("#p-body iframe").forEach(f=>f.srcdoc=f.srcdoc);
+$("b-brief").onclick=()=>{
+  const brief={
+    project:(state.product+"-"+state.vertical).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""),
+    product:state.product, vertical:state.vertical, client:state.client, clickThrough:state.clickThrough,
+    locales:state.locales, animation:state.animation,
+    assets:{ logo:null, hero:"inputs/assets/hero.png", imageFit:state.imageFit },
+    audiences:state.audiences.map(a=>({id:a.id,label:a.label,image:null,copy:a.copy}))
+  };
+  downloadFile("brief.json",JSON.stringify(brief,null,2),"application/json");
+};
+$("b-zip").onclick=()=>{
+  const files=listBanners().map(it=>({name:(it.a.id+"_"+it.loc+"_"+it.s.w+"x"+it.s.h)+"/index.html",data:renderOne(it.a,it.loc,it.s)}));
+  downloadFile("aws-banners.zip",makeZip(files),"application/zip");
+};
+
+// ---------- minimal store-only ZIP (no deps) ----------
+const CRC=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+function crc32(u8){let c=0xFFFFFFFF;for(let i=0;i<u8.length;i++)c=CRC[(c^u8[i])&0xFF]^(c>>>8);return(c^0xFFFFFFFF)>>>0}
+function makeZip(files){
+  const enc=new TextEncoder(),chunks=[],central=[];let offset=0;
+  const u16=n=>[n&255,(n>>8)&255],u32=n=>[n&255,(n>>8)&255,(n>>16)&255,(n>>24)&255];
+  files.forEach(f=>{
+    const name=enc.encode(f.name),data=enc.encode(f.data),crc=crc32(data);
+    const local=[].concat(u32(0x04034b50),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0));
+    chunks.push(new Uint8Array(local),name,data);
+    const cen=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(name.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(offset));
+    central.push(new Uint8Array(cen),name);
+    offset+=local.length+name.length+data.length;
+  });
+  let cenSize=0;central.forEach(c=>cenSize+=c.length);
+  const cenStart=offset;
+  const eocd=new Uint8Array([].concat(u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(cenSize),u32(cenStart),u16(0)));
+  const all=chunks.concat(central,[eocd]);
+  let total=0;all.forEach(a=>total+=a.length);
+  const out=new Uint8Array(total);let p=0;all.forEach(a=>{out.set(a,p);p+=a.length});
+  return new Blob([out],{type:"application/zip"});
+}
+
+// ---------- auto-translate (free, no key: MyMemory) ----------
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function mmTranslate(text,target){
+  const url="https://api.mymemory.translated.net/get?q="+encodeURIComponent(text)+"&langpair=en|"+encodeURIComponent(target);
+  const r=await fetch(url);
+  if(!r.ok) throw new Error("http "+r.status);
+  const j=await r.json();
+  const t=j&&j.responseData&&j.responseData.translatedText;
+  if(!t) throw new Error("empty");
+  return t;
+}
+$("b-translate").onclick=async()=>{
+  const targets=state.locales.filter(l=>l!=="en");
+  if(!targets.length){alert("Turn on another language first (in the Languages section).");return;}
+  if(!confirm("Auto-fill "+targets.map(t=>ALL_LOCALES[t]||t).join(", ")+" from the English copy?\n\nThis overwrites existing text in those languages. You can still edit any field by hand afterward.\n\nUses a free machine-translation service — draft quality, review before client use."))return;
+  const btn=$("b-translate"),orig=btn.textContent;btn.disabled=true;
+  const jobs=[];
+  state.audiences.forEach(a=>targets.forEach(loc=>COPY_FIELDS.forEach(([k])=>{
+    const src=(a.copy.en&&a.copy.en[k])||"";if(src.trim())jobs.push({a,loc,k,src});
+  })));
+  let i=0,failed=0;
+  for(const j of jobs){
+    btn.textContent="Translating… "+(++i)+"/"+jobs.length;
+    try{ j.a.copy[j.loc]=j.a.copy[j.loc]||{}; j.a.copy[j.loc][j.k]=await mmTranslate(j.src,j.loc); }
+    catch(e){ failed++; }
+    await sleep(220);
+  }
+  btn.disabled=false;btn.textContent=orig;
+  buildAudiences();renderPreviews();
+  if(failed)alert("Done — but "+failed+" of "+jobs.length+" phrases didn't translate (free-service daily limit or a network hiccup). Re-run later, or fill those few by hand.");
+};
+
+// ---------- go ----------
+buildControls();
+renderPreviews();
+</script>
+</body>
+</html>

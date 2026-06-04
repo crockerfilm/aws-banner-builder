@@ -1,0 +1,38 @@
+{
+  "project": "bedrock-fintech-spec",
+  "product": "Amazon Bedrock",
+  "vertical": "Financial Services",
+  "client": {
+    "name": "Northwind Financial (fictional)",
+    "logoText": "aws"
+  },
+  "clickThrough": "https://aws.amazon.com/bedrock/",
+  "locales": ["en", "es"],
+  "animation": { "preset": "fade-up", "duration": 450, "stagger": 300, "loops": 1 },
+  "assets": {
+    "logo": null,
+    "hero": "inputs/assets/bedrock-hero.png",
+    "imageFit": "contain"
+  },
+  "_note": "All client names + stats are fictional, spec work only. AWS voice = enablement through proof: lead with what the customer built. 'short' copy is used on tight formats (728x90, 320x50). Drop designer assets into inputs/assets/ and point to them here (shared 'hero', or per-audience 'image'). Logos/graphics: imageFit 'contain'. Photos: 'cover'.",
+  "audiences": [
+    {
+      "id": "developer",
+      "label": "Developer",
+      "image": null,
+      "copy": {
+        "en": { "headline": "Northwind shipped a fraud-detection agent in 6 weeks.", "short": "Build agents in weeks.", "subhead": "Built on Amazon Bedrock.", "proof": "6 WEEKS TO PRODUCTION", "cta": "Start building" },
+        "es": { "headline": "Northwind cre\u00f3 un agente antifraude en 6 semanas.", "short": "Crea agentes en semanas.", "subhead": "Con Amazon Bedrock.", "proof": "6 SEMANAS A PRODUCCI\u00d3N", "cta": "Empieza a crear" }
+      }
+    },
+    {
+      "id": "it-director",
+      "label": "IT Director",
+      "image": null,
+      "copy": {
+        "en": { "headline": "Northwind cut fraud review time by 60%.", "short": "Cut review time 60%.", "subhead": "With agentic AI on Amazon Bedrock.", "proof": "60% FASTER REVIEW", "cta": "See how" },
+        "es": { "headline": "Northwind redujo el tiempo de revisi\u00f3n un 60%.", "short": "Revisi\u00f3n 60% m\u00e1s r\u00e1pida.", "subhead": "Con IA agentica en Amazon Bedrock.", "proof": "60% M\u00c1S R\u00c1PIDO", "cta": "Descubre c\u00f3mo" }
+      }
+    }
+  ]
+}
