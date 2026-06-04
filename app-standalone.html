@@ -619,9 +619,13 @@ function renderExport(m){
   const total=S.audiences.length*S.locales.length*enabledSizeObjs().length;
   rail.innerHTML='<div class="hint">'+total+' banners: '+S.audiences.length+' audience'+(S.audiences.length>1?'s':'')+' × '+S.locales.length+' language'+(S.locales.length>1?'s':'')+' × '+enabledSizeObjs().length+' sizes — all from your one master layout + per-size tweaks.</div>'
     +'<button class="btn primary" id="bZip2" style="width:100%">⬇ Download all (.zip)</button>'
-    +'<button class="btn" id="bProj" style="width:100%;margin-top:8px">Export project (.json)</button>'
-    +'<label class="sec">Import project</label><input type="file" id="bImp" accept="application/json" style="font-size:11px">'
-    +'<button class="btn" id="bReplay2" style="width:100%;margin-top:10px">▶ Replay animations</button>';
+    +'<h2 class="sec">Save your work</h2>'
+    +'<div style="font-size:11px;color:var(--muted);margin-bottom:8px" id="saveState"></div>'
+    +'<button class="btn" id="bSave" style="width:100%">💾 Save in this browser</button>'
+    +'<button class="btn" id="bProj" style="width:100%;margin-top:8px">⬇ Export project file (.json)</button>'
+    +'<label class="sec">Open a project file</label><input type="file" id="bImp" accept="application/json" style="font-size:11px">'
+    +'<button class="btn" id="bFresh" style="width:100%;margin-top:8px">↺ Start fresh</button>'
+    +'<button class="btn" id="bReplay2" style="width:100%;margin-top:14px">▶ Replay animations</button>';
   m.appendChild(rail);
   const ex=document.createElement('div'); ex.className='export'; m.appendChild(ex);
   S.audiences.forEach(a=>{
@@ -648,6 +652,11 @@ function renderExport(m){
   $('bZip2').onclick=downloadZip; $('bProj').onclick=exportProject;
   $('bReplay2').onclick=()=>document.querySelectorAll('.export iframe').forEach(f=>f.srcdoc=f.srcdoc);
   $('bImp').onchange=e=>importProject(e.target.files[0]);
+  $('bSave').onclick=()=>{ if(saveLocal()) {} else alert('This browser/context blocks local save — use “Export project file” instead.'); };
+  $('bFresh').onclick=()=>{ if(confirm('Start fresh? This clears the autosaved session in this browser. Export a project file first if you want to keep this work.')){ clearLocal(); location.reload(); } };
+  const ss=$('saveState');
+  if(ss) ss.textContent = !hasLS ? 'Local save unavailable here — use Export project file.'
+        : (window.__restored ? 'Restored your last session. Autosaving as you work.' : 'Autosaving in this browser as you work.');
 }
 
 function allFiles(){
@@ -658,20 +667,25 @@ function allFiles(){
   return files;
 }
 function downloadZip(){ downloadFile('aws-banners.zip', makeZip(allFiles())); }
-function exportProject(){
-  const o=Object.assign({},S,{enabledSizes:[...S.enabledSizes]});
-  delete o.tab; delete o.selected; delete o.activeSize;
-  downloadFile('aws-banner-project.json', new Blob([JSON.stringify(o,null,2)],{type:'application/json'}));
-}
-function importProject(file){ if(!file)return; const r=new FileReader(); r.onload=()=>{ try{ const o=JSON.parse(r.result);
+function serialize(){ const o=Object.assign({},S,{enabledSizes:[...S.enabledSizes]}); delete o.tab; delete o.selected; delete o.activeSize; return o; }
+function applyProject(o){
   Object.keys(o).forEach(k=>{ if(k==='enabledSizes')S.enabledSizes=new Set(o[k]); else S[k]=o[k]; });
   S.tab='design'; S.activeSize='master'; S.selected='headline';
   if(!S.audiences.find(a=>a.id===S.designAud))S.designAud=S.audiences[0].id;
   if(!S.locales.includes(S.designLoc))S.designLoc=S.locales[0];
-  renderSteps(); buildAnim(); renderMain(); }catch(err){alert('Could not read project file.');} }; r.readAsText(file); }
+}
+function exportProject(){ downloadFile('aws-banner-project.json', new Blob([JSON.stringify(serialize(),null,2)],{type:'application/json'})); }
+function importProject(file){ if(!file)return; const r=new FileReader(); r.onload=()=>{ try{ applyProject(JSON.parse(r.result)); saveLocal(); renderSteps(); buildAnim(); renderMain(); }catch(err){alert('Could not read project file.');} }; r.readAsText(file); }
+
+// ---- browser autosave: persists across refreshes when run locally or hosted; no-ops in a restricted preview ----
+const LS_KEY='awsBannerStudio.v1';
+const hasLS=(function(){try{const k='__t';localStorage.setItem(k,'1');localStorage.removeItem(k);return true;}catch(_){return false;}})();
+function saveLocal(){ if(!hasLS)return false; try{ localStorage.setItem(LS_KEY,JSON.stringify(serialize())); const el=$('saveState'); if(el)el.textContent='Saved in this browser · '+new Date().toLocaleTimeString(); return true; }catch(_){return false;} }
+function loadLocal(){ if(!hasLS)return null; try{ const s=localStorage.getItem(LS_KEY); return s?JSON.parse(s):null; }catch(_){return null;} }
+function clearLocal(){ if(!hasLS)return; try{localStorage.removeItem(LS_KEY);}catch(_){} }
 
 /* ============================= SHARED UTIL ============================= */
-const schedulePreview=debounce(()=>{ /* preview only re-renders when on export tab */ if(S.tab==='export'){} },200);
+const schedulePreview=debounce(()=>{ saveLocal(); },800);
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function escAttr(s){return escHtml(s).replace(/"/g,'&quot;');}
 function buildAnim(){
@@ -699,6 +713,9 @@ function makeZip(files){const enc=new TextEncoder(),chunks=[],central=[];let off
 $('bZip').onclick=downloadZip;
 $('bReplay').onclick=()=>document.querySelectorAll('iframe').forEach(f=>f.srcdoc=f.srcdoc);
 
+const __saved=loadLocal();
+if(__saved){ try{ applyProject(__saved); window.__restored=true; }catch(_){} }
+if(hasLS){ window.addEventListener('beforeunload',saveLocal); document.addEventListener('visibilitychange',()=>{ if(document.hidden)saveLocal(); }); setInterval(saveLocal,5000); }
 buildAnim(); renderSteps(); renderMain();
 </script>
 </body>
